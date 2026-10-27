@@ -29,8 +29,9 @@ class AppShell extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
 
   void _onDestinationSelected(int index) {
-    // Tapping the active tab again pops it back to its first screen.
-    navigationShell.goBranch(index, initialLocation: index == navigationShell.currentIndex);
+    // Every tab opens on its main screen, even if a sub-page (an address, an
+    // order, checkout) was open when the user left it.
+    navigationShell.goBranch(index, initialLocation: true);
   }
 
   @override
