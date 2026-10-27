@@ -6,6 +6,7 @@ import '../../../core/router/app_routes.dart';
 import '../../../core/widgets/constrained_content.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../data/order_repository.dart';
+import '../domain/order.dart';
 import 'widgets/order_card.dart';
 
 class OrdersScreen extends ConsumerWidget {
@@ -28,12 +29,17 @@ class OrdersScreen extends ConsumerWidget {
             child: const Text('Retry'),
           ),
         ),
-        data: (orders) {
+        data: (allOrders) {
+          final now = DateTime.now();
+          final orders = allOrders.where((order) => !order.isHiddenFromHistory(now)).toList();
+          const retentionNote =
+              'Completed and cancelled orders are kept here for $orderHistoryMonths months after you place them.';
+
           if (orders.isEmpty) {
             return EmptyState(
               icon: Icons.receipt_long_outlined,
               title: 'No orders yet',
-              message: 'Orders you place will show up here.',
+              message: allOrders.isEmpty ? 'Orders you place will show up here.' : retentionNote,
               action: FilledButton.tonal(
                 onPressed: () => context.go(AppRoutes.catalog),
                 child: const Text('Start shopping'),
@@ -44,9 +50,19 @@ class OrdersScreen extends ConsumerWidget {
           return ConstrainedContent(
             child: ListView.separated(
               padding: const EdgeInsets.all(16),
-              itemCount: orders.length,
+              itemCount: orders.length + 1,
               separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
+                if (index == orders.length) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Text(
+                      retentionNote,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  );
+                }
                 final order = orders[index];
                 return OrderCard(order: order, onTap: () => context.go(AppRoutes.orderDetail(order.id)));
               },

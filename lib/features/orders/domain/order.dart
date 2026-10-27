@@ -1,5 +1,10 @@
 import '../../addresses/domain/address.dart';
 
+/// Finished orders stay in the customer's order history for this many months
+/// after they were placed. They are only hidden, never deleted: admins still
+/// see every order.
+const orderHistoryMonths = 3;
+
 enum OrderStatus {
   pending('Pending'),
   processing('Processing'),
@@ -120,4 +125,23 @@ class Order {
   String get number => id.substring(0, 8).toUpperCase();
 
   int get itemCount => items.fold(0, (count, item) => count + item.quantity);
+
+  bool get isFinished => status == OrderStatus.delivered || status == OrderStatus.cancelled;
+
+  /// Whether this order has dropped out of the customer's history at [now]:
+  /// it is finished and was placed at least [orderHistoryMonths] months ago.
+  /// Orders still in progress always stay visible.
+  bool isHiddenFromHistory(DateTime now) {
+    final placed = createdAt;
+    if (!isFinished || placed == null) return false;
+    final cutoff = DateTime(
+      placed.year,
+      placed.month + orderHistoryMonths,
+      placed.day,
+      placed.hour,
+      placed.minute,
+      placed.second,
+    );
+    return !now.isBefore(cutoff);
+  }
 }
