@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets/constrained_content.dart';
 import '../../../core/widgets/demo_data_notice.dart';
+import '../../../core/widgets/labeled_field.dart';
 import '../../auth/data/user_repository.dart';
 import '../data/address_repository.dart';
 import '../domain/address.dart';
@@ -122,13 +123,16 @@ class _AddressFormScreenState extends ConsumerState<AddressFormScreen> {
               children: [
                 const DemoDataNotice(),
                 const SizedBox(height: 16),
-                TextFormField(
-                  controller: _label,
-                  decoration: const InputDecoration(labelText: 'Label', hintText: 'e.g. Home, Work'),
-                  textCapitalization: TextCapitalization.words,
-                  textInputAction: TextInputAction.next,
-                  onChanged: (_) => setState(() {}),
-                  validator: required,
+                LabeledField(
+                  label: 'Label',
+                  child: TextFormField(
+                    controller: _label,
+                    decoration: const InputDecoration(hintText: 'e.g. Home, Work'),
+                    textCapitalization: TextCapitalization.words,
+                    textInputAction: TextInputAction.next,
+                    onChanged: (_) => setState(() {}),
+                    validator: required,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Wrap(
@@ -143,70 +147,82 @@ class _AddressFormScreenState extends ConsumerState<AddressFormScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
-                  controller: _fullName,
-                  decoration: const InputDecoration(labelText: 'Recipient name'),
-                  textCapitalization: TextCapitalization.words,
-                  textInputAction: TextInputAction.next,
-                  autofillHints: const [AutofillHints.name],
-                  validator: required,
+                LabeledField(
+                  label: 'Recipient name',
+                  child: TextFormField(
+                    controller: _fullName,
+                    textCapitalization: TextCapitalization.words,
+                    textInputAction: TextInputAction.next,
+                    autofillHints: const [AutofillHints.name],
+                    validator: required,
+                  ),
                 ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _phone,
-                  decoration: const InputDecoration(labelText: 'Phone number'),
-                  keyboardType: TextInputType.phone,
-                  textInputAction: TextInputAction.next,
-                  autofillHints: const [AutofillHints.telephoneNumber],
-                  validator: (value) {
-                    final digits = value?.replaceAll(RegExp(r'\D'), '') ?? '';
-                    return digits.length < 7 ? 'Enter a valid phone number' : null;
-                  },
+                const SizedBox(height: 16),
+                LabeledField(
+                  label: 'Phone number',
+                  child: TextFormField(
+                    controller: _phone,
+                    keyboardType: TextInputType.phone,
+                    textInputAction: TextInputAction.next,
+                    autofillHints: const [AutofillHints.telephoneNumber],
+                    validator: (value) {
+                      final digits = value?.replaceAll(RegExp(r'\D'), '') ?? '';
+                      return digits.length < 7 ? 'Enter a valid phone number' : null;
+                    },
+                  ),
                 ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _street,
-                  decoration: const InputDecoration(labelText: 'Street address'),
-                  textInputAction: TextInputAction.next,
-                  autofillHints: const [AutofillHints.streetAddressLine1],
-                  validator: required,
+                const SizedBox(height: 16),
+                LabeledField(
+                  label: 'Street address',
+                  child: TextFormField(
+                    controller: _street,
+                    textInputAction: TextInputAction.next,
+                    autofillHints: const [AutofillHints.streetAddressLine1],
+                    validator: required,
+                  ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
                       flex: 3,
-                      child: TextFormField(
-                        controller: _city,
-                        decoration: const InputDecoration(labelText: 'City'),
-                        textInputAction: TextInputAction.next,
-                        autofillHints: const [AutofillHints.addressCity],
-                        validator: required,
+                      child: LabeledField(
+                        label: 'City',
+                        child: TextFormField(
+                          controller: _city,
+                          textInputAction: TextInputAction.next,
+                          autofillHints: const [AutofillHints.addressCity],
+                          validator: required,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       flex: 2,
-                      child: TextFormField(
-                        controller: _postalCode,
-                        decoration: const InputDecoration(labelText: 'Postal code'),
-                        keyboardType: TextInputType.number,
-                        textInputAction: TextInputAction.next,
-                        autofillHints: const [AutofillHints.postalCode],
-                        validator: required,
+                      child: LabeledField(
+                        label: 'Postal code',
+                        child: TextFormField(
+                          controller: _postalCode,
+                          keyboardType: TextInputType.number,
+                          textInputAction: TextInputAction.next,
+                          autofillHints: const [AutofillHints.postalCode],
+                          validator: required,
+                        ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _country,
-                  decoration: const InputDecoration(labelText: 'Country'),
-                  textCapitalization: TextCapitalization.words,
-                  textInputAction: TextInputAction.done,
-                  autofillHints: const [AutofillHints.countryName],
-                  validator: required,
+                const SizedBox(height: 16),
+                LabeledField(
+                  label: 'Country',
+                  child: TextFormField(
+                    controller: _country,
+                    textCapitalization: TextCapitalization.words,
+                    textInputAction: TextInputAction.done,
+                    autofillHints: const [AutofillHints.countryName],
+                    validator: required,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 SwitchListTile(

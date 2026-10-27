@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../core/images/image_repository.dart';
 import '../../../core/widgets/constrained_content.dart';
+import '../../../core/widgets/labeled_field.dart';
 import '../../products/data/product_repository.dart';
 import '../../products/domain/product_input.dart';
 import '../../products/presentation/widgets/product_image.dart';
@@ -166,79 +167,96 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                     }),
                   ),
                   const SizedBox(height: 24),
-                  TextFormField(
-                    controller: _title,
-                    decoration: const InputDecoration(labelText: 'Product name'),
-                    textCapitalization: TextCapitalization.words,
-                    textInputAction: TextInputAction.next,
-                    validator: required,
+                  LabeledField(
+                    label: 'Product name',
+                    child: TextFormField(
+                      controller: _title,
+                      textCapitalization: TextCapitalization.words,
+                      textInputAction: TextInputAction.next,
+                      validator: required,
+                    ),
                   ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _brand,
-                    decoration: const InputDecoration(labelText: 'Brand (optional)'),
-                    textCapitalization: TextCapitalization.words,
-                    textInputAction: TextInputAction.next,
+                  const SizedBox(height: 16),
+                  LabeledField(
+                    label: 'Brand (optional)',
+                    child: TextFormField(
+                      controller: _brand,
+                      textCapitalization: TextCapitalization.words,
+                      textInputAction: TextInputAction.next,
+                    ),
                   ),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    initialValue: categories.any((c) => c.slug == _category) ? _category : null,
-                    decoration: const InputDecoration(labelText: 'Category'),
-                    items: [
-                      for (final category in categories)
-                        DropdownMenuItem(value: category.slug, child: Text(category.name)),
-                    ],
-                    onChanged: (value) => setState(() => _category = value),
-                    validator: (value) => value == null ? 'Choose a category' : null,
+                  const SizedBox(height: 16),
+                  LabeledField(
+                    label: 'Category',
+                    child: DropdownButtonFormField<String>(
+                      initialValue: categories.any((c) => c.slug == _category) ? _category : null,
+                      hint: const Text('Choose a category'),
+                      items: [
+                        for (final category in categories)
+                          DropdownMenuItem(value: category.slug, child: Text(category.name)),
+                      ],
+                      onChanged: (value) => setState(() => _category = value),
+                      validator: (value) => value == null ? 'Choose a category' : null,
+                    ),
                   ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _description,
-                    decoration: const InputDecoration(labelText: 'Description', alignLabelWithHint: true),
-                    textCapitalization: TextCapitalization.sentences,
-                    minLines: 3,
-                    maxLines: 8,
-                    validator: required,
+                  const SizedBox(height: 16),
+                  LabeledField(
+                    label: 'Description',
+                    child: TextFormField(
+                      controller: _description,
+                      textCapitalization: TextCapitalization.sentences,
+                      minLines: 3,
+                      maxLines: 8,
+                      validator: required,
+                    ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: TextFormField(
-                          controller: _price,
-                          decoration: const InputDecoration(labelText: 'Price', prefixText: '\$ '),
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          textInputAction: TextInputAction.next,
-                          validator: (value) {
-                            final price = _parseNumber(value ?? '');
-                            return price == null || price <= 0 ? 'Enter a price' : null;
-                          },
+                        child: LabeledField(
+                          label: 'Price',
+                          child: TextFormField(
+                            controller: _price,
+                            decoration: const InputDecoration(prefixText: '\$ '),
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            textInputAction: TextInputAction.next,
+                            validator: (value) {
+                              final price = _parseNumber(value ?? '');
+                              return price == null || price <= 0 ? 'Enter a price' : null;
+                            },
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: TextFormField(
-                          controller: _discount,
-                          decoration: const InputDecoration(labelText: 'Discount', suffixText: '%'),
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          textInputAction: TextInputAction.next,
-                          validator: (value) {
-                            final discount = _parseNumber(value ?? '0') ?? -1;
-                            return discount < 0 || discount > 90 ? '0–90' : null;
-                          },
+                        child: LabeledField(
+                          label: 'Discount',
+                          child: TextFormField(
+                            controller: _discount,
+                            decoration: const InputDecoration(suffixText: '%'),
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            textInputAction: TextInputAction.next,
+                            validator: (value) {
+                              final discount = _parseNumber(value ?? '0') ?? -1;
+                              return discount < 0 || discount > 90 ? '0–90' : null;
+                            },
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _stock,
-                    decoration: const InputDecoration(labelText: 'Stock'),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    textInputAction: TextInputAction.done,
-                    validator: (value) => int.tryParse(value?.trim() ?? '') == null ? 'Enter the stock' : null,
+                  const SizedBox(height: 16),
+                  LabeledField(
+                    label: 'Stock',
+                    child: TextFormField(
+                      controller: _stock,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      textInputAction: TextInputAction.done,
+                      validator: (value) => int.tryParse(value?.trim() ?? '') == null ? 'Enter the stock' : null,
+                    ),
                   ),
                   const SizedBox(height: 24),
                   FilledButton(

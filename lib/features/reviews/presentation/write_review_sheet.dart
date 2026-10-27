@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/widgets/labeled_field.dart';
 import '../data/review_repository.dart';
 
 /// Opens a bottom sheet to rate and review a product from a delivered order.
@@ -106,18 +107,17 @@ class _WriteReviewSheetState extends ConsumerState<_WriteReviewSheet> {
                 style: theme.textTheme.labelLarge,
               ),
               const SizedBox(height: 16),
-              TextField(
-                controller: _comment,
-                enabled: !_isSaving,
-                decoration: const InputDecoration(
-                  labelText: 'Your review (optional)',
-                  hintText: 'What did you like or dislike?',
-                  alignLabelWithHint: true,
+              LabeledField(
+                label: 'Your review (optional)',
+                child: TextField(
+                  controller: _comment,
+                  enabled: !_isSaving,
+                  decoration: const InputDecoration(hintText: 'What did you like or dislike?'),
+                  textCapitalization: TextCapitalization.sentences,
+                  minLines: 3,
+                  maxLines: 6,
+                  maxLength: _maxCommentLength,
                 ),
-                textCapitalization: TextCapitalization.sentences,
-                minLines: 3,
-                maxLines: 6,
-                maxLength: _maxCommentLength,
               ),
               if (_error != null) ...[
                 const SizedBox(height: 8),

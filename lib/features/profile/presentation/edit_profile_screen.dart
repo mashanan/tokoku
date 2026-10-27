@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets/constrained_content.dart';
+import '../../../core/widgets/labeled_field.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../auth/data/user_repository.dart';
 
@@ -67,37 +68,42 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                TextFormField(
-                  controller: _name,
-                  decoration: const InputDecoration(labelText: 'Full name', prefixIcon: Icon(Icons.person_outline)),
-                  textCapitalization: TextCapitalization.words,
-                  textInputAction: TextInputAction.next,
-                  autofillHints: const [AutofillHints.name],
-                  validator: (value) => (value == null || value.trim().isEmpty) ? 'Enter your name' : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _phone,
-                  decoration: const InputDecoration(
-                    labelText: 'Phone number (optional)',
-                    prefixIcon: Icon(Icons.phone_outlined),
+                LabeledField(
+                  label: 'Full name',
+                  child: TextFormField(
+                    controller: _name,
+                    decoration: const InputDecoration(prefixIcon: Icon(Icons.person_outline)),
+                    textCapitalization: TextCapitalization.words,
+                    textInputAction: TextInputAction.next,
+                    autofillHints: const [AutofillHints.name],
+                    validator: (value) => (value == null || value.trim().isEmpty) ? 'Enter your name' : null,
                   ),
-                  keyboardType: TextInputType.phone,
-                  textInputAction: TextInputAction.done,
-                  autofillHints: const [AutofillHints.telephoneNumber],
-                  validator: (value) {
-                    final digits = value?.replaceAll(RegExp(r'\D'), '') ?? '';
-                    return digits.isNotEmpty && digits.length < 7 ? 'Enter a valid phone number' : null;
-                  },
                 ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  initialValue: email,
-                  enabled: false,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: Icon(Icons.email_outlined),
-                    helperText: 'Email can’t be changed here.',
+                const SizedBox(height: 16),
+                LabeledField(
+                  label: 'Phone number (optional)',
+                  child: TextFormField(
+                    controller: _phone,
+                    decoration: const InputDecoration(prefixIcon: Icon(Icons.phone_outlined)),
+                    keyboardType: TextInputType.phone,
+                    textInputAction: TextInputAction.done,
+                    autofillHints: const [AutofillHints.telephoneNumber],
+                    validator: (value) {
+                      final digits = value?.replaceAll(RegExp(r'\D'), '') ?? '';
+                      return digits.isNotEmpty && digits.length < 7 ? 'Enter a valid phone number' : null;
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+                LabeledField(
+                  label: 'Email',
+                  child: TextFormField(
+                    initialValue: email,
+                    enabled: false,
+                    decoration: const InputDecoration(
+                      prefixIcon: Icon(Icons.email_outlined),
+                      helperText: 'Email can’t be changed here.',
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),
