@@ -30,7 +30,12 @@ class CartRepository {
     return _items(uid).orderBy('addedAt', descending: true).snapshots().map(
           (snapshot) => [
             for (final doc in snapshot.docs)
-              CartEntry(productId: doc.id, quantity: (doc.data()['quantity'] as num? ?? 0).toInt()),
+              CartEntry(
+                productId: doc.id,
+                quantity: (doc.data()['quantity'] as num? ?? 0).toInt(),
+                // Items saved before selection existed count as ticked.
+                selected: doc.data()['selected'] as bool? ?? true,
+              ),
           ],
         );
   }
@@ -43,12 +48,14 @@ class CartRepository {
       final current = (snapshot.data()?['quantity'] as num? ?? 0).toInt();
       final next = min(current + quantity, product.stock);
 
+      // Adding an item again ticks it, since the customer clearly wants it.
       if (snapshot.exists) {
-        transaction.update(ref, {'quantity': next});
+        transaction.update(ref, {'quantity': next, 'selected': true});
       } else {
         transaction.set(ref, {
           'productId': product.id,
           'quantity': next,
+          'selected': true,
           'addedAt': FieldValue.serverTimestamp(),
         });
       }
@@ -63,6 +70,20 @@ class CartRepository {
   }
 
   Future<void> remove(String productId) => _items(_uid).doc(productId).delete();
+
+  /// Ticks or unticks one item for checkout.
+  Future<void> setSelected(String productId, bool selected) {
+    return _items(_uid).doc(productId).update({'selected': selected});
+  }
+
+  /// Ticks or unticks every item in [productIds] at once.
+  Future<void> setAllSelected(Iterable<String> productIds, bool selected) async {
+    final batch = _firestore.batch();
+    for (final productId in productIds) {
+      batch.update(_items(_uid).doc(productId), {'selected': selected});
+    }
+    await batch.commit();
+  }
 
   Future<void> clear() async {
     final snapshot = await _items(_uid).get();
@@ -99,7 +120,12 @@ final cartItemsProvider = Provider<AsyncValue<List<CartItem>>>((ref) {
   final productsById = {for (final product in productList) product.id: product};
   return AsyncData([
     for (final entry in entryList)
-      CartItem(productId: entry.productId, quantity: entry.quantity, product: productsById[entry.productId]),
+      CartItem(
+        productId: entry.productId,
+        quantity: entry.quantity,
+        product: productsById[entry.productId],
+        selected: entry.selected,
+      ),
   ]);
 });
 

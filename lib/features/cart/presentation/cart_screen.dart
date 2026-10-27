@@ -59,12 +59,21 @@ class CartScreen extends ConsumerWidget {
             );
           }
 
-          final summary = CartSummary.of(items);
-          final list = ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: items.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 12),
-            itemBuilder: (context, index) => _CartItemTile(item: items[index]),
+          // Totals and checkout only cover the ticked items.
+          final summary = CartSummary.of(items.where((item) => item.isSelectedForCheckout).toList());
+          final list = Column(
+            children: [
+              _SelectAllBar(items: items),
+              const Divider(height: 1),
+              Expanded(
+                child: ListView.separated(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: items.length,
+                  separatorBuilder: (context, index) => const SizedBox(height: 12),
+                  itemBuilder: (context, index) => _CartItemTile(item: items[index]),
+                ),
+              ),
+            ],
           );
 
           // Tablets keep the order summary in a side panel.
@@ -95,6 +104,50 @@ class CartScreen extends ConsumerWidget {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+/// "Select all" checkbox above the cart. Shows a dash when only some items are ticked.
+class _SelectAllBar extends ConsumerWidget {
+  const _SelectAllBar({required this.items});
+
+  final List<CartItem> items;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selection = CartSelection.of(items);
+    final buyableIds = [for (final item in items) if (item.isAvailable) item.productId];
+    final selectedCount = items.where((item) => item.isSelectedForCheckout).length;
+
+    // Ticking a partly ticked list selects everything, like most shopping apps.
+    void toggle() => ref.read(cartRepositoryProvider).setAllSelected(buyableIds, selection != CartSelection.all);
+
+    return InkWell(
+      onTap: buyableIds.isEmpty ? null : toggle,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+        child: Row(
+          children: [
+            Checkbox(
+              tristate: true,
+              value: switch (selection) {
+                CartSelection.all => true,
+                CartSelection.none => false,
+                CartSelection.some => null,
+              },
+              onChanged: buyableIds.isEmpty ? null : (_) => toggle(),
+              semanticLabel: 'Select all items',
+            ),
+            const SizedBox(width: 4),
+            Expanded(child: Text('Select all', style: Theme.of(context).textTheme.titleSmall)),
+            Text(
+              '$selectedCount of ${buyableIds.length} selected',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -133,6 +186,18 @@ class _CartItemTile extends ConsumerWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Padding(
+                  // Lines the checkbox up with the middle of the photo.
+                  padding: const EdgeInsets.only(top: 20),
+                  child: Checkbox(
+                    value: item.isSelectedForCheckout,
+                    // Sold-out or removed products can't be bought, so they can't be ticked.
+                    onChanged: item.isAvailable
+                        ? (value) => cart.setSelected(item.productId, value ?? false)
+                        : null,
+                    semanticLabel: 'Select ${product?.title ?? 'item'} for checkout',
+                  ),
+                ),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: SizedBox.square(dimension: 88, child: ProductImage(url: product?.thumbnail ?? '')),
@@ -224,7 +289,7 @@ class _CartSummaryPanel extends StatelessWidget {
           const SizedBox(height: 12),
           FilledButton(
             onPressed: summary.itemCount == 0 ? null : () => context.go(AppRoutes.checkout),
-            child: const Text('Checkout'),
+            child: Text(summary.itemCount == 0 ? 'Select items to check out' : 'Checkout (${summary.itemCount})'),
           ),
         ],
       ),

@@ -48,4 +48,31 @@ void main() {
     expect(item.purchasableQuantity, 3);
     expect(item.total, 6);
   });
+
+  group('selection', () {
+    CartItem item(String id, {bool selected = true, int stock = 10}) =>
+        CartItem(productId: id, quantity: 1, product: _product(stock: stock), selected: selected);
+
+    test('only ticked, buyable items go to checkout', () {
+      expect(item('a').isSelectedForCheckout, isTrue);
+      expect(item('a', selected: false).isSelectedForCheckout, isFalse);
+      expect(item('a', stock: 0).isSelectedForCheckout, isFalse);
+    });
+
+    test('select all reflects the buyable items only', () {
+      expect(CartSelection.of([item('a'), item('b')]), CartSelection.all);
+      expect(CartSelection.of([item('a'), item('b', selected: false)]), CartSelection.some);
+      expect(CartSelection.of([item('a', selected: false), item('b', selected: false)]), CartSelection.none);
+      // A ticked but sold-out item doesn't stop "all" from being shown.
+      expect(CartSelection.of([item('a'), item('b', stock: 0, selected: false)]), CartSelection.all);
+      expect(CartSelection.of(const []), CartSelection.none);
+    });
+
+    test('the summary can cover just the ticked items', () {
+      final items = [item('a'), item('b', selected: false)];
+      final summary = CartSummary.of(items.where((i) => i.isSelectedForCheckout).toList());
+      expect(summary.itemCount, 1);
+      expect(summary.total, 10);
+    });
+  });
 }

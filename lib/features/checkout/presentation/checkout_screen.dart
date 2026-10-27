@@ -62,8 +62,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
     setState(() => _isPlacing = true);
     try {
+      // Only the ticked items are ordered; the rest stay in the cart.
+      final selectedItems = (ref.read(cartItemsProvider).value ?? const <CartItem>[])
+          .where((item) => item.isSelectedForCheckout);
       final orderId = await ref.read(checkoutRepositoryProvider).placeOrder(
-            entries: ref.read(cartEntriesProvider).value ?? const [],
+            entries: [
+              for (final item in selectedItems) CartEntry(productId: item.productId, quantity: item.quantity),
+            ],
             address: address.address,
             shippingMethod: _shippingMethod,
             paymentMethod: _paymentMethod,
@@ -89,15 +94,17 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => const EmptyState(icon: Icons.cloud_off_outlined, title: 'Could not load your cart'),
         data: (items) {
-          final available = items.where((item) => item.isAvailable).toList();
+          final available = items.where((item) => item.isSelectedForCheckout).toList();
           if (available.isEmpty) {
             return EmptyState(
               icon: Icons.shopping_cart_outlined,
               title: 'Nothing to check out',
-              message: 'Add some products to your cart first.',
+              message: items.isEmpty
+                  ? 'Add some products to your cart first.'
+                  : 'Tick the items you want to buy in your cart.',
               action: FilledButton.tonal(
-                onPressed: () => context.go(AppRoutes.catalog),
-                child: const Text('Start shopping'),
+                onPressed: () => context.go(items.isEmpty ? AppRoutes.catalog : AppRoutes.cart),
+                child: Text(items.isEmpty ? 'Start shopping' : 'Back to cart'),
               ),
             );
           }
